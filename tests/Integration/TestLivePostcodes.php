@@ -66,7 +66,7 @@ class TestLivePostcodes extends TestCase
     );
     $this->assertInstanceOf(Vector::class, $result);
     $this->assertInstanceOf(Map::class, $result->at(0));
-    $this->assertEquals('South East', $result->at(0)->at('region'));
+    $this->assertContains($result->at(0)->at('region'), ['South East', 'North West']);
   }
 
   /**
