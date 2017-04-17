@@ -10,8 +10,9 @@ use PHPUnit\Framework\TestCase;
 
 
 use mfmbarber\HackPostcodes\AbstractPostcodes;
-use mfmbarber\HackPostcodes\CurlRequest;
-use mfmbarber\HackPostcodes\CurlInterface;
+use mfmbarber\HackPostcodes\Curl\CurlRequest;
+use mfmbarber\HackPostcodes\Curl\CurlInterface;
+use mfmbarber\HackPostcodes\Response;
 /**
  * Test suite for the AbstractPostcodes class
  *
@@ -64,8 +65,8 @@ class TestAbstractPostcodes extends TestCase
     }';
     $ap = new MockAp(new MockCr($data));
     $result = \HH\Asio\join($ap->request($ap::POSTCODES_END . '/t35t', Map {}, false));
-    $this->assertInstanceOf(Map::class, $result);
-    $this->assertEquals($result->at('postcode'), 'BH12 2BL');
+    $this->assertInstanceOf(Response::class, $result);
+    $this->assertEquals($result->getString('postcode'), 'BH12 2BL');
   }
 
   /**

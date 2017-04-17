@@ -4,7 +4,7 @@
  *
  * @author Matt Barber<mfmbarber@gmail.com>
 **/
-namespace mfmbarber\HackPostcodes;
+namespace mfmbarber\HackPostcodes\Curl;
 
 class CurlRequest implements CurlInterface
 {
