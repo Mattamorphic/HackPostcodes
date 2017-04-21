@@ -43,7 +43,7 @@ class Response {
   **/
   public function getSubResponse(arraykey $key) : Response {
     $v = $this->getValue($key);
-    invariant(is_array($v), 'key in data is not a string');
+    invariant(is_array($v), 'key in data is not a response');
     return new Response($v);
   }
 
@@ -56,8 +56,14 @@ class Response {
   **/
   public function getNumber(arraykey $key) : num {
     $v = $this->getValue($key);
-    invariant(is_numeric($v), 'key in data is not a string');
-    return (float) $v;
+    invariant(is_numeric($v), 'key in data is not a number');
+    if (is_int($v)) {
+      return $v;
+    }
+    if (is_float($v)) {
+      return $v;
+    }
+    invariant_violation('Value at key is not a number');
   }
 
   /**
@@ -69,7 +75,7 @@ class Response {
   **/
   public function getBoolean(arraykey $key) : bool {
     $v = $this->getValue($key);
-    invariant(is_bool($v), 'key in data is not a string');
+    invariant(is_bool($v), 'key in data is not a boolean');
     return $v;
   }
 
@@ -120,7 +126,7 @@ class Response {
   /**
    * Private function, check to see if array_key_exists in the data
    *
-   * @param arraykey $key The key in the array to look for 
+   * @param arraykey $key The key in the array to look for
   **/
   private function getValue(arraykey $key) : mixed {
     invariant(array_key_exists($key, $this->data), "Key not found in response");
