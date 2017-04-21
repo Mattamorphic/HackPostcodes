@@ -9,8 +9,9 @@ namespace mfmbarber\HackPostcodes\Tests\Unit;
 use PHPUnit\Framework\TestCase;
 
 use mfmbarber\HackPostcodes\Postcodes;
-use mfmbarber\HackPostcodes\CurlRequest;
-use mfmbarber\HackPostcodes\CurlInterface;
+use mfmbarber\HackPostcodes\Curl\CurlRequest;
+use mfmbarber\HackPostcodes\Curl\CurlInterface;
+use mfmbarber\HackPostcodes\Response;
 
 /**
  * Test suite for the Postcodes class

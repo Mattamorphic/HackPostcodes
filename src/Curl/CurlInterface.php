@@ -5,7 +5,7 @@
  * @author Matt Barber <mfmbarber@gmail.com>
  * @category Interface
 **/
-namespace mfmbarber\HackPostcodes;
+namespace mfmbarber\HackPostcodes\Curl;
 
 /**
  * An interface for any curl classes we might implement

@@ -1,4 +1,4 @@
-<?hh
+<?hh //strict
 /**
  * Main file for the HackPostcodes library
  *
@@ -20,10 +20,10 @@ final class Postcodes extends AbstractPostcodes
    *
    * @return Map <string, mixed>
   **/
-  public function lookup(string $postcode) : Map {
+  public function lookup(string $postcode) : Map<arraykey, mixed> {
     $postcode = $this->parse($postcode);
     $result = \HH\Asio\join($this->request(self::POSTCODES_END ."/$postcode", Map {}, false));
-    return new Map($result);
+    return $result->toMap();
   }
 
   /**
@@ -33,13 +33,16 @@ final class Postcodes extends AbstractPostcodes
    *
    * @return Vector<Map>
   **/
-  public function lookupBulk(Vector<string> $postcodes) : Vector<Map> {
+  public function lookupBulk(Vector<string> $postcodes) : Vector<Map<arraykey, mixed>> {
     $postcodes = Map {
       'postcodes' => $postcodes->map($p ==> $this->parse($p))->toArray()
     };
     $result = \HH\Asio\join($this->request(self::POSTCODES_END, $postcodes, true));
-    $vResult = new Vector($result);
-    return $vResult->map($x ==> new Map($x['result']));
+    $v = new Vector(null);
+    foreach ($result->loop() as $data) {
+      $v->add($data->getSubResponse('result')->toMap());
+    }
+    return $v;
   }
 
   /**
@@ -49,7 +52,7 @@ final class Postcodes extends AbstractPostcodes
    *
    * @return Map
   **/
-  public function lookupLatLon(Pair<float, float> $geolocation) : Vector<Map> {
+  public function lookupLatLon(Pair<float, float> $geolocation) : Vector<Map<arraykey, mixed>> {
     $result = \HH\Asio\join(
       $this->request(
         self::POSTCODES_END,
@@ -60,8 +63,11 @@ final class Postcodes extends AbstractPostcodes
         false
       )
     );
-    $vResult = new Vector($result);
-    return $vResult->map($x ==> new Map($x));
+    $v = new Vector(null);
+    foreach ($result->loop() as $data) {
+      $v->add($data->toMap());
+    }
+    return $v;
   }
 
   /**
@@ -72,7 +78,7 @@ final class Postcodes extends AbstractPostcodes
    *
    * @return Vector<Map>
   **/
-  public function lookupBulkLatLong(Vector<Pair<float, float>> $geolocations) : Vector<Vector<Map>> {
+  public function lookupBulkLatLong(Vector<Pair<float, float>> $geolocations) : Vector<Vector<Map<arraykey, mixed>>> {
     $payload = $geolocations->map(
       $p ==> Map {
         'longitude' => $p->at(0),
@@ -86,12 +92,15 @@ final class Postcodes extends AbstractPostcodes
         true
       )
     );
-    return $result->map(
-      function (array $geo) : Vector {
-        $data = new Vector($geo['result']);
-        return $data->map($x ==> new Map($x));
+    $v = new Vector(null);
+    foreach ($result->loop() as $data) {
+      $x = new Vector(null);
+      foreach ($data->getSubResponse('result')->loop() as $sData) {
+        $x->add($sData->toMap());
       }
-    )->toVector();
+      $v->add($x);
+    }
+    return $v;
   }
 
   /**
@@ -106,7 +115,7 @@ final class Postcodes extends AbstractPostcodes
     $result = \HH\Asio\join(
       $this->request(self::POSTCODES_END . "/$postcode/validate", Map {}, false)
     );
-    return (bool) $result->at('result');
+    return $result->getBoolean(0);
   }
 
   /**
@@ -116,13 +125,16 @@ final class Postcodes extends AbstractPostcodes
    *
    * @return Vector<Map>
   **/
-  public function getNearest(string $postcode) : Vector<Map> {
+  public function getNearest(string $postcode) : Vector<Map<arraykey, mixed>> {
     $postcode = $this->parse($postcode);
     $result = \HH\Asio\join(
       $this->request(self::POSTCODES_END . "/$postcode/nearest", Map {}, false)
     );
-    $vResult = new Vector($result);
-    return $vResult->map($x ==> new Map($x));
+    $v = new Vector(null);
+    foreach ($result->loop() as $data) {
+      $v->add($data->toMap());
+    }
+    return $v;
   }
 
   /**
@@ -144,7 +156,7 @@ final class Postcodes extends AbstractPostcodes
         false
       )
     );
-    return new Vector($result);
+    return $result->toVector()->map($x ==> (string) $x);
   }
 
   /**
@@ -152,7 +164,7 @@ final class Postcodes extends AbstractPostcodes
    *
    * @return Map
   **/
-  public function random() : Map {
+  public function random() : Map<arraykey, mixed> {
     $result = \HH\Asio\join(
       $this->request(
         '/random' . self::POSTCODES_END,
@@ -160,7 +172,7 @@ final class Postcodes extends AbstractPostcodes
         false
       )
     );
-    return new Map($result);
+    return $result->toMap();
   }
 
   /**
@@ -177,11 +189,15 @@ final class Postcodes extends AbstractPostcodes
     $rad = 6371;
     // Get the information from postcodes.io
     list($p1, $p2) = $this->lookupBulk(Vector {$postcode1, $postcode2});
-    $dLat = deg2rad($p2->at('latitude') - $p1->at('latitude'));
-    $dLon = deg2rad($p2->at('longitude') - $p1->at('longitude'));
 
+    $dLat = deg2rad(
+      (float) $p2->at('latitude') - (float)$p1->at('latitude')
+    );
+    $dLon = deg2rad(
+      (float) $p2->at('longitude') - (float) $p1->at('longitude')
+    );
     $a = sin($dLat / 2) * sin($dLat / 2) +
-         cos(deg2rad($p1->at('latitude'))) * cos(deg2rad($p2->at('latitude'))) *
+         cos(deg2rad((float) $p1->at('latitude'))) * cos(deg2rad((float) $p2->at('latitude'))) *
          sin($dLon / 2) * sin($dLon / 2);
     $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
     return $rad * $c;

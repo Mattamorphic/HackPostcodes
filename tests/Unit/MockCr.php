@@ -5,7 +5,7 @@
  * @author Matt Barber<mfmbarber@gmail.com>
 **/
 namespace mfmbarber\HackPostcodes\Tests\Unit;
-use mfmbarber\HackPostcodes\CurlRequest;
+use mfmbarber\HackPostcodes\Curl\CurlRequest;
 /**
  * A Mock of the CurlRequest class - we have to use this as it contains async
  *

@@ -1,10 +1,12 @@
-<?hh
+<?hh //strict
 /**
  * A file in the HackPostcodes library
  *
  * @author Matt Barber<mfmbarber@gmail.com>
 **/
 namespace mfmbarber\HackPostcodes;
+use mfmbarber\HackPostcodes\Curl\CurlInterface;
+use mfmbarber\HackPostcodes\Curl\CurlRequest;
 /**
  * Abstract implementation of the HackPostcodes primary functions
  *
@@ -44,7 +46,7 @@ class AbstractPostcodes implements PostcodesInterface {
    *
    * @return Awaitable<object>
   **/
-  public async function request(string $endpoint, Map<string, mixed> $params, bool $post) : Awaitable<Map> {
+  public async function request(string $endpoint, Map<string, mixed> $params, bool $post) : Awaitable<Response> {
     // If GET then build http params
     if (!$post) {
       $endpoint.= '?' . http_build_query($params->toArray());
@@ -68,9 +70,9 @@ class AbstractPostcodes implements PostcodesInterface {
 
     // if the result is not an array - make it one
     if (!is_array($result['result'])) {
-      $result['result'] = ['result' => $result['result']];
+      $result['result'] = [$result['result']];
     }
-    return new Map($result['result']);
+    return new Response($result['result']);
   }
 
   /**
